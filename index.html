@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html ng-app="UploadFrenzy">
 
 <head>
 
@@ -34,7 +34,7 @@
 
 </head>
 
-<body id="page-top" class="index">
+<body id="page-top" class="index" ng-app="UploadFrenzy">
 
     <!-- Navigation -->
     <nav id="mainNav" class="navbar navbar-default navbar-fixed-top navbar-custom">
@@ -146,7 +146,7 @@
                         <img src="img/portfolio/submarine.png" class="img-responsive" alt="">
                     </a> -->
                 </div>
-                <div class="col-sm-4 portfolio-item">
+                <div class="col-sm-4 portfolio-item" ng-controller="UpdateDatabase">
                     <a href="#portfolioModal5" class="portfolio-link" data-toggle="modal">
                         <div class="caption">
                             <div class="caption-content">
@@ -173,10 +173,10 @@
             </div>
             <div class="row">
                 <div class="col-lg-4 col-lg-offset-2">
-                    <p style="text-align:justify;">In this Dashboard we can add information to Frenzy App data base like promotions, coupons or costumers, it important verify the data before to save please don't forget it.</p>
+                    <p style="text-align:justify;">In this Dashboard we can add information to Frenzy App database like promotions, coupons or costumers, it important verify the data before to save please don't forget it.</p>
                 </div>
                 <div class="col-lg-4">
-                    <p style="text-align:justify;">Also you can update the data base, this update consist in verify all promotions and cancel expired promotions, also calculate the quantity of promotions, coupons and the average of saving.</p>
+                    <p style="text-align:justify;">Also you can update the database, this update consist in verify all promotions and cancel expired promotions, also calculate the quantity of promotions, coupons and the average of saving.</p>
                 </div>
             </div>
         </div>
@@ -379,13 +379,13 @@
                 <div class="row">
                     <div class="col-lg-8 col-lg-offset-2">
                         <div class="modal-body">
-                            <h2>Update Data Base</h2>
+                            <h2>Update Database</h2>
                             <hr class="star-primary">
                             <img src="img/refresh.png" class="img-responsive img-centered" alt="">
                             <p>Use this area of the page to describe your project. The icon above is part of a free icon set by <a href="https://sellfy.com/p/8Q9P/jV3VZ/">Flat Icons</a>. On their website, you can download their free set with 16 icons, or you can purchase the entire set with 146 icons for only $12!</p>
-                            <div class="">
-                              <button type="button" class="btn btn-default" style="font-size: 50px;">
-                                <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Update
+                            <div ng-controller='UpdateDatabase'>
+                              <button type="button" class="btn btn-default" style="font-size: 50px;" ng-click ="updateCounts()">
+                                <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Update Database
                               </button>
                               <p></p>
                               <button type="button" class="btn btn-default" data-dismiss="modal" style="font-size: 50px;"><i class="glyphicon glyphicon-remove"></i> Close</button>
@@ -450,6 +450,14 @@
     <!-- Theme JavaScript -->
     <script src="js/freelancer.min.js"></script>
 
+    <!-- Angular Library -->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
+
+    <!-- Firebase Library -->
+    <script src="https://www.gstatic.com/firebasejs/3.2.0/firebase.js"></script>
+
+    <!-- Main Javascript -->
+    <script src="js/main.js"></script>
 </body>
 
 </html>
