@@ -146,7 +146,7 @@
                         <img src="img/portfolio/submarine.png" class="img-responsive" alt="">
                     </a> -->
                 </div>
-                <div class="col-sm-4 portfolio-item" ng-controller="UpdateDatabase">
+                <div class="col-sm-4 portfolio-item">
                     <a href="#portfolioModal5" class="portfolio-link" data-toggle="modal">
                         <div class="caption">
                             <div class="caption-content">
@@ -384,11 +384,11 @@
                             <img src="img/refresh.png" class="img-responsive img-centered" alt="">
                             <p>Use this area of the page to describe your project. The icon above is part of a free icon set by <a href="https://sellfy.com/p/8Q9P/jV3VZ/">Flat Icons</a>. On their website, you can download their free set with 16 icons, or you can purchase the entire set with 146 icons for only $12!</p>
                             <div ng-controller='UpdateDatabase'>
-                              <button type="button" class="btn btn-default" style="font-size: 50px;" ng-click ="updateCounts()">
+                              <button type="button" class="btn btn-default" style="font-size: 200%;" ng-click ="updateCounts()">
                                 <span class="glyphicon glyphicon-refresh" aria-hidden="true"></span> Update Database
                               </button>
                               <p></p>
-                              <button type="button" class="btn btn-default" data-dismiss="modal" style="font-size: 50px;"><i class="glyphicon glyphicon-remove"></i> Close</button>
+                              <button type="button" class="btn btn-default" data-dismiss="modal" style="font-size: 200%;"><i class="glyphicon glyphicon-remove"></i> Close</button>
                             </div>
                         </div>
                     </div>
@@ -454,7 +454,13 @@
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.8/angular.min.js"></script>
 
     <!-- Firebase Library -->
-    <script src="https://www.gstatic.com/firebasejs/3.2.0/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/3.2.0/firebase.js"></script>+
+
+    <!-- Moment JS Framework -->
+    <script src="js/DateLibraries/moment.js"></script>
+
+    <!-- Moment Timezone JS Framework -->
+    <script src="js/DateLibraries/moment-timezone.js"></script>
 
     <!-- Main Javascript -->
     <script src="js/main.js"></script>
