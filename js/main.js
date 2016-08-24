@@ -5,8 +5,6 @@ var FrenzyAppConfig = {
  storageBucket: "frenzyapplication.appspot.com",
 };
 
-
-
 var FrenzyDashboardConfig = {
  apiKey: "AIzaSyDIbQh6IA6D9HHhfogQUZP63omtjwzAiBA",
    authDomain: "frenzydashboard.firebaseapp.com",
@@ -22,28 +20,62 @@ var UploadFrenzy = angular.module('UploadFrenzy',[]);
 /* Controller to update data base */
 UploadFrenzy.controller('UpdateDatabase', ['$scope', function($scope) {
   /*Variable that save promotion and coupons*/
-  $scope.PromotionDatabase;
-  $scope.CouponDatabase;
+  $scope.PromotionDatabase = {};
+  $scope.CouponDatabase = {};
 
   /* This scope will save all costumer and your count */
-  $scope.CoustomerArray;
+  $scope.CustomerArray;
+
+  /* Variables que cuardaran el conteo de categories */
+  $scope.countPromotion;
+  $scope.countCoupon;
+
+  $scope.updateCategory = function() {
+    FrenzyApp.database().ref('AppCategory').once('value', function(categoryData) {
+      for (var x in categoryData.val()) {
+        $scope.countCoupon = 0;
+        $scope.countPromotion = 0;
+        for (var y in $scope.CustomerArray) {
+          if (categoryData.val()[x]['CategoryName'] === $scope.CustomerArray[y]['categoryApp']) {
+            $scope.countPromotion += $scope.CustomerArray[y]['countPromotion'];
+            $scope.countCoupon += $scope.CustomerArray[y]['countCoupon'];
+          }
+        }
+
+        FrenzyApp.database().ref('AppCategory/'+x).update({
+             QuantityCoupon: $scope.countCoupon,
+             QuantityPromotion: $scope.countPromotion
+        })
+      }
+    }).then(function() {
+      console.log("$$ Update Category Finished $$");
+    })
+  }
 
   $scope.updateCounts = function() {
     /* Llamamamos loas datos de customer y creamos el json que almancenara los conteos de proomos, cupones y el promedio */
     FrenzyDashboard.database().ref('Customer').once('value', function(customerData) {
       var dictionary = {};
       for (var i in customerData.val()) {
-        dictionary[customerData.val()[i]["Name"]] = {'countPromotion':0,'countCoupon':0,'average':0,'key':i}
+        dictionary[customerData.val()[i]['Name']] = {'countPromotion':0,'countCoupon':0,'average':0,'key':i,'categoryApp':customerData.val()[i]['CategoryApp']}
       }
-      $scope.CoustomerArray = dictionary;
+      $scope.CustomerArray = dictionary;
     }).then(function() {
       /* Lllamamos los datos de promociones y los guardamos en un arreglo local */
       FrenzyApp.database().ref('Promotion').once('value', function(promotionData) {
-        $scope.PromotionDatabase = promotionData.val();
+        for (x in promotionData.val()) {
+          if (promotionData.val()[x]['Status'] === true) {
+            $scope.PromotionDatabase[x] = promotionData.val()[x];
+          }
+        }
       }).then(function() {
         /* Llamamos los datos de cupones y los guardamos en un arreglo local */
         FrenzyApp.database().ref('Coupon').once('value', function(couponData) {
-          $scope.CouponDatabase = couponData.val();
+          for (y in couponData.val()) {
+            if (couponData.val()[y]['Status'] === true) {
+              $scope.CouponDatabase[y] = couponData.val()[y];
+            }
+          }
         }).then(function() {
           /* Recorremos los datos del arreglo de customer para poder calcular los conteos y promedio */
           FrenzyDashboard.database().ref('Customer').once('value', function(customerData) {
@@ -55,59 +87,57 @@ UploadFrenzy.controller('UpdateDatabase', ['$scope', function($scope) {
                 if ($scope.CouponDatabase[x]['Customer'][0] === customerData.val()[i]["Name"]) {
                   /* Verifica si es DirectDiscount porque sino no tiene un valor en dinero */
                   if ($scope.CouponDatabase[x]['TypeOfExchange'] === 'DirectDiscount') {
-                    if ($scope.CouponDatabase[x]['Status'] === true) {
                       /* Actualiza el conteo dentro del arreglo de costumer para cupones */
-                      $scope.CoustomerArray[customerData.val()[i]["Name"]]['countCoupon'] += 1
+                      $scope.CustomerArray[customerData.val()[i]["Name"]]['countCoupon'] += 1;
                       /* Se calcula el ahorro y se almacena en average */
-                      $scope.CoustomerArray[customerData.val()[i]["Name"]]['average'] += $scope.CouponDatabase[x]['CouponDiscount']
-                    }
-
+                      $scope.CustomerArray[customerData.val()[i]["Name"]]['average'] += $scope.CouponDatabase[x]['CouponDiscount'];
+                  } else {
+                    /* Actualiza el conteo dentro del arreglo de costumer para cupones */
+                    $scope.CustomerArray[customerData.val()[i]["Name"]]['countCoupon'] += 1;
+                    /* Se calcula el ahorro y se almacena en average, es cero porque es descuento en porcentaje */
+                    $scope.CustomerArray[customerData.val()[i]["Name"]]['average'] = 0;
                   }
                 }
               }/* final for de cupones */
 
               /* Este for recorre promociones para ver cuantas promociones tiene cada cliente */
               for (var x in $scope.PromotionDatabase) {
-                /* Verifica si la promocion esta activa */
-                if ($scope.PromotionDatabase[x]['Status'] === true) {
                   /* Verifica que la promocion pertenezca al cliente en la pocicion i del for principal */
                   if ($scope.PromotionDatabase[x]['Customer'][0] === customerData.val()[i]["Name"]) {
-                    /* Actualiza el conteo dentro del arreglo de costumer para promociones */
-                    $scope.CoustomerArray[customerData.val()[i]["Name"]]['countPromotion'] += 1;
-                    /* Se calcula el ahorro y se almacena en average */
-                    $scope.CoustomerArray[customerData.val()[i]["Name"]]['average'] += ($scope.PromotionDatabase[x]['BasePrice'] - $scope.PromotionDatabase[x]['PromotionalPrice']);
+                      /* Actualiza el conteo dentro del arreglo de costumer para promociones */
+                      $scope.CustomerArray[customerData.val()[i]["Name"]]['countPromotion'] += 1
+                      /* Se calcula el ahorro y se almacena en average */
+                      $scope.CustomerArray[customerData.val()[i]["Name"]]['average'] += ($scope.PromotionDatabase[x]['BasePrice'] - $scope.PromotionDatabase[x]['PromotionalPrice'])
                   }
-                }
               } /* Final for de promos*/
 
             }/* Final for de customer en firebase */
             /* Este for recorre los costumer para calcular el promedio de ahorro */
-            for (var y in $scope.CoustomerArray) {
-              if (isNaN($scope.CoustomerArray[y]['average'])) {
-                $scope.CoustomerArray[y]['average'] = 0;
+            for (var y in $scope.CustomerArray) {
+              if (isNaN($scope.CustomerArray[y]['average'])) {
+                $scope.CustomerArray[y]['average'] = 0;
               } else {
-                if ($scope.CoustomerArray[y]['average'] != 0) {
+                if ($scope.CustomerArray[y]['average'] != 0) {
                   var totalAverage = 0;
-                  totalAverage = ($scope.CoustomerArray[y]['average'] / ($scope.CoustomerArray[y]['countCoupon'] + $scope.CoustomerArray[y]['countPromotion']));
-                  $scope.CoustomerArray[y]['average'] = totalAverage.toFixed(2);
+                  totalAverage = ($scope.CustomerArray[y]['average'] / ($scope.CustomerArray[y]['countCoupon'] + $scope.CustomerArray[y]['countPromotion']));
+                  $scope.CustomerArray[y]['average'] = totalAverage.toFixed(2);
                 } else {
-                  $scope.CoustomerArray[y]['average'] = 0;
+                  $scope.CustomerArray[y]['average'] = 0;
                 }
               }
             }/* Final for calculo de promedio  */
           }).then(function() {
-            console.log($scope.CoustomerArray);
             /* for que recorre CustomerArray local*/
-            for (var y in $scope.CoustomerArray) {
+            for (var y in $scope.CustomerArray) {
               /* Enviamos la llave para entrar a cada uno de los customer en firebase */
-              FrenzyDashboard.database().ref('Customer/'+$scope.CoustomerArray[y]['key']).update({
-                AverageSaving: $scope.CoustomerArray[y]['average'],
-                QuantityCoupon: $scope.CoustomerArray[y]['countCoupon'],
-                QuantityPromotion: $scope.CoustomerArray[y]['countPromotion'],
+              FrenzyDashboard.database().ref('Customer/'+$scope.CustomerArray[y]['key']).update({
+                AverageSaving: $scope.CustomerArray[y]['average'],
+                QuantityCoupon: $scope.CustomerArray[y]['countCoupon'],
+                QuantityPromotion: $scope.CustomerArray[y]['countPromotion'],
               })
             }
-
-            console.log("## Actualizo ##");
+            console.log("## Update Finished ##");
+            $scope.updateCategory();
           })
         });
       });
@@ -131,7 +161,6 @@ UploadFrenzy.controller('UpdateDatabase', ['$scope', function($scope) {
         /* verificamos si la fecha de finalizacion es mayor a la fecha Actual
           de ser asi la promocion tiene que estar activa. */
         if (fechaFinal > $scope.fechaActual) {
-          console.log(promotionData.val()[z]['Customer'][0]);
           /* Enviamos la llave para entrar a cada uno de las promociones en firebase y dar de alta la promo*/
           FrenzyApp.database().ref('Promotion/'+ z).update({
             Status: true
@@ -142,9 +171,12 @@ UploadFrenzy.controller('UpdateDatabase', ['$scope', function($scope) {
             Status: false
           })
         }
+      }/* final for verificacion de EndDate */
 
+      /* Recorremos las promociones que estan en firebase */
+      for (var a in promotionData.val()) {
         /* Convertimos la de finalizacion de las promociones que esta en firebase */
-        var fechaPublicacion =  new Date(moment(promotionData.val()[z]['PublicationDate'], 'DD/MM/YYYY HH:mm:ss'));
+        var fechaPublicacion =  new Date(moment(promotionData.val()[a]['PublicationDate'], 'DD/MM/YYYY HH:mm:ss'));
         /* Convertimos la fecha a milisegundos */
         fechaPublicacion = moment(fechaFinal).format('x');
 
@@ -153,17 +185,19 @@ UploadFrenzy.controller('UpdateDatabase', ['$scope', function($scope) {
         if (fechaPublicacion > $scope.fechaActual) {
           /* Enviamos la llave para entrar a cada uno de las promociones en firebase y dar de alta la promo*/
           FrenzyApp.database().ref('Promotion/'+ z).update({
-            Status: true
+            Status: false
           })
         } else {
           /* Enviamos la llave para entrar a cada uno de las promociones en firebase y dar de baja la promo*/
           FrenzyApp.database().ref('Promotion/'+ z).update({
-            Status: false
+            Status: true
           })
         }
-      }
+      }/* final for verificacion de PublicationDate */
 
+    }).then(function() {
+        console.log("XXX Shutdown Finished XXX");
+        $scope.updateCounts();
     });
-
-  };
+  }
 }]);
